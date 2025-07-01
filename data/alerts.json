@@ -1,0 +1,14 @@
+{
+  "2025-07-01": [
+    {
+      "message": "Attention : données provisoires.",
+      "type": "warning"
+    }
+  ],
+  "2025-07-02": [
+    {
+      "message": "Aucune donnée disponible pour cette journée.",
+      "type": "error"
+    }
+  ]
+}

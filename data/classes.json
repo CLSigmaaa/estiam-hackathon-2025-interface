@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "nom": "1STI2D",
+    "effectif": 28,
+    "type": "lycee"
+  },
+  {
+    "id": 2,
+    "nom": "BTS SIO1",
+    "effectif": 20,
+    "type": "bts"
+  }
+]

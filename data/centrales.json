@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "nom": "Centrale 1",
+    "topique": "central/topic1",
+    "etat": "active"
+  },
+  {
+    "id": 2,
+    "nom": "Centrale 2",
+    "topique": "central/topic2",
+    "etat": "inactive"
+  }
+]
