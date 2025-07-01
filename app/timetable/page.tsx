@@ -1,45 +1,75 @@
 "use client";
 
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import scheduleJson from "@/data/schedule.json" assert { type: "json" };
-import alertsJson from "@/data/alerts.json" assert { type: "json" };
-import sallesJson from "@/data/salles.json" assert { type: "json" };
 
-import { ScheduleData, AlertsData, Salle } from "@/lib/timetable/types";
-import { formatFrDate, getLastUpdated } from "@/lib/timetable/utils";
 import { filterTimeSlots } from "@/lib/timetable/filters";
+import { formatFrDate, getLastUpdated, getTimeSlotsBetween } from "@/lib/timetable/utils";
+import { ALL_TIME_SLOTS } from "@/lib/timetable/constants";
+import { parseTimetableParams } from "@/lib/timetable/searchParams";
+import { useTimetableData } from "@/hooks/useTimetableData";
 
 import TimetableHeader from "@/components/Timetable/Header";
 import TimetableTable from "@/components/Timetable/Table";
+import LoadingState from "@/components/LoadingState";
 
 export default function TimetableDisplay() {
+  const { affectations, informations, salles, error } = useTimetableData();
   const searchParams = useSearchParams();
 
-  const selectedDay =
-    searchParams.get("jour") ?? new Date().toISOString().split("T")[0];
-  const selectedRooms = searchParams.getAll("salle");
-  const selectedSlot = searchParams.get("plage_horaire");
-  const showAll = searchParams.get("tout") === "true";
-  const theme = searchParams.get("theme") === "dark" ? "dark" : "light";
+  const { day, rooms, slot, showAll, theme } = useMemo(() => {
+    return parseTimetableParams(searchParams);
+  }, [searchParams]);
 
-  const schedule: ScheduleData = scheduleJson;
-  const alerts: AlertsData = alertsJson;
-  const salles: Salle[] = sallesJson;
+  const safeDay = useMemo(() => {
+    const d = new Date(day);
+    return isNaN(d.getTime()) ? new Date().toISOString().split("T")[0] : day;
+  }, [day]);
 
-  const allRooms = salles.map((salle) => salle.nom);
-  const allSlots = [
-    "08:00–08:30", "08:30–09:00", "09:00–09:30", "09:30–10:00",
-    "10:00–10:30", "10:30–11:00", "11:00–11:30", "11:30–12:00",
-    "12:00–12:30", "12:30–13:00", "13:00–13:30", "13:30–14:00",
-    "14:00–14:30", "14:30–15:00", "15:00–15:30", "15:30–16:00",
-    "16:00–16:30"
-  ];
+  const allRooms = salles?.map((s) => s.nom) || [];
+  const roomsToRender = showAll || rooms.length === 0 ? allRooms : rooms;
+  const slotsToRender = filterTimeSlots(ALL_TIME_SLOTS, slot, showAll);
 
-  const roomsToRender = showAll || selectedRooms.length === 0 ? allRooms : selectedRooms;
-  const slotsToRender = filterTimeSlots(allSlots, selectedSlot, showAll);
+  // Construction d’un planning à partir des affectations
+  const daySchedule = useMemo(() => {
+    const map: Record<string, Record<string, string>> = {};
+    const dateOnly = safeDay;
 
-  const daySchedule = schedule[selectedDay] ?? {};
-  const alertsForDay = alerts[selectedDay] ?? [];
+    for (const aff of affectations || []) {
+      const affDate = new Date(aff.heure_debut).toISOString().split("T")[0];
+      if (affDate !== dateOnly) continue;
+
+      const slots = getTimeSlotsBetween(new Date(aff.heure_debut), new Date(aff.heure_fin));
+
+      for (const timeRange of slots) {
+        if (!map[timeRange]) map[timeRange] = {};
+
+        for (const salle of aff.salles || []) {
+          const label = aff.classes?.map((c) => c.nom).join(", ") || aff.nom_professeur;
+          map[timeRange][salle.nom] = label;
+        }
+      }
+    }
+
+    return map;
+  }, [affectations, safeDay]);
+
+  const alertsForDay = useMemo(() => {
+    const d = new Date(safeDay).toISOString().split("T")[0];
+    return (
+      informations?.filter(
+        (info) => info.statut && info.type !== "success" && d
+      ) || []
+    );
+  }, [informations, safeDay]);
+
+  if (error) {
+    return <div className="p-4 text-red-600 text-center">{error}</div>;
+  }
+
+  if (!affectations || !informations || !salles) {
+    return <LoadingState message="Chargement des emplois du temps..." />;
+  }
 
   return (
     <div
@@ -47,7 +77,10 @@ export default function TimetableDisplay() {
         theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
       }`}
     >
-      <TimetableHeader formattedDate={formatFrDate(selectedDay)} alerts={alertsForDay} />
+      <TimetableHeader
+        formattedDate={formatFrDate(safeDay)}
+        alerts={alertsForDay}
+      />
 
       <TimetableTable
         rooms={roomsToRender}

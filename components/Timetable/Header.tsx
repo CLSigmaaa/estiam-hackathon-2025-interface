@@ -10,11 +10,7 @@ export default function Header({
 }) {
   return (
     <div className="text-center mb-6">
-      <h1 className="text-4xl lg:text-6xl font-serif font-extrabold mb-2">
-        Emploi du temps
-      </h1>
       <div className="text-lg lg:text-xl">{formattedDate}</div>
-
       {alerts.length > 0 && (
         <div className="space-y-2 mt-4">
           {alerts.map((alert, i) => (

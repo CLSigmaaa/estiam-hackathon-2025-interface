@@ -1,5 +1,11 @@
 import { getClassColor } from "@/lib/timetable/utils";
 
+type ScheduleMap = {
+  [slot: string]: {
+    [room: string]: string;
+  };
+};
+
 export default function TimetableTable({
   rooms,
   slots,
@@ -8,7 +14,7 @@ export default function TimetableTable({
 }: {
   rooms: string[];
   slots: string[];
-  schedule: any;
+  schedule: ScheduleMap;
   theme: "light" | "dark";
 }) {
   return (
@@ -19,7 +25,7 @@ export default function TimetableTable({
     >
       <div className="overflow-x-auto h-full">
         <table className="w-full table-fixed text-xs lg:text-sm h-full">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="bg-gray-800 text-white">
               <th className="px-2 py-2 text-left font-semibold w-[120px]">Heure</th>
               {rooms.map((room) => (
@@ -37,7 +43,7 @@ export default function TimetableTable({
             {slots.map((slot, i) => (
               <tr
                 key={slot}
-                className={
+                className={`h-[calc(100vh/${slots.length})] ${
                   theme === "dark"
                     ? i % 2 === 0
                       ? "bg-gray-700"
@@ -45,22 +51,22 @@ export default function TimetableTable({
                     : i % 2 === 0
                     ? "bg-gray-50"
                     : "bg-white"
-                }
+                }`}
               >
                 <td className="px-2 py-2 font-semibold border-r border-gray-300 align-middle">
                   {slot}
                 </td>
                 {rooms.map((room) => {
-                  const className = schedule[slot]?.[room] || "/";
+                  const label = schedule?.[slot]?.[room] ?? "/";
                   return (
                     <td key={room} className="px-1 py-1 text-center align-middle">
                       <div
                         className={`w-full h-full flex items-center justify-center px-1 py-1 border rounded text-xs ${getClassColor(
-                          className,
+                          label,
                           theme
-                        )} ${className === "/" ? "italic" : ""}`}
+                        )} ${label === "/" ? "italic text-gray-400 dark:text-gray-500" : ""}`}
                       >
-                        {className}
+                        {label}
                       </div>
                     </td>
                   );

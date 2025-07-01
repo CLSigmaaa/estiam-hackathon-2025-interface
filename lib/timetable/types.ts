@@ -21,3 +21,21 @@ export type Salle = {
   capacite: number;
   statut: "ouverte" | "fermee";
 };
+
+export type Affectation = {
+  id: number
+  heure_debut: string // ISO
+  heure_fin: string
+  date_creation: string
+  date_modification: string
+  nom_professeur: string
+  salles: { id: number; nom: string }[]
+  classes: { id: number; nom: string }[]
+}
+
+export type Information = {
+  id: number
+  type: "info" | "warning" | "error" | "success"
+  message: string
+  statut: boolean
+}

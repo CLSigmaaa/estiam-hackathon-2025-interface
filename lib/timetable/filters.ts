@@ -3,10 +3,10 @@ export function filterTimeSlots(
   selectedSlot: string | null,
   showAll: boolean
 ): string[] {
-  if (showAll || !selectedSlot?.includes("–")) return allSlots;
-  const [rangeStart, rangeEnd] = selectedSlot.split("–");
+  if (showAll || !selectedSlot?.includes("-")) return allSlots;
+  const [rangeStart, rangeEnd] = selectedSlot.split("-");
   return allSlots.filter((slot) => {
-    const [slotStart] = slot.split("–");
+    const [slotStart] = slot.split("-");
     return slotStart >= rangeStart && slotStart <= rangeEnd;
   });
 }

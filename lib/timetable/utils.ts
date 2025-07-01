@@ -25,15 +25,35 @@ export function formatFrDate(dateStr: string) {
     day: "numeric",
   };
   const raw = date.toLocaleDateString("fr-FR", options);
-  return raw.replace(/^([A-Za-zéûî]+) 1 /, "$1 1er ");
+  const formatted = raw.replace(/^([A-Za-zéûî]+) 1 /, "$1 1er ");
+
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
 export function getLastUpdated() {
-  return new Date()
+  const time = new Date()
     .toLocaleTimeString("fr-FR", {
       hour: "numeric",
       minute: "numeric",
       hour12: false,
     })
-    .replace(":", " heures ");
+    .replace(":", " h ");
+
+  return time.charAt(0).toUpperCase() + time.slice(1);
+}
+
+export function getTimeSlotsBetween(start: Date, end: Date): string[] {
+  const slots: string[] = [];
+  const current = new Date(start);
+  const endDate = new Date(end);
+
+  while (current < endDate) {
+    const next = new Date(current.getTime() + 30 * 60 * 1000); // +30 minutes
+    const startStr = current.toTimeString().substring(0, 5);
+    const endStr = next.toTimeString().substring(0, 5);
+    slots.push(`${startStr}–${endStr}`);
+    current.setTime(next.getTime());
+  }
+
+  return slots;
 }
