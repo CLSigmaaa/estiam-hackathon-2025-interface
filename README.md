@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 School Planner — Next.js + Prisma + Supabase
 
-## Getting Started
+Application de gestion d'emploi du temps et de ressources pour établissements scolaires.
 
-First, run the development server:
+## 🚀 Fonctionnalités
+
+- ✅ **Backend avec Prisma** connecté à **Supabase (PostgreSQL)**
+- ✅ **API REST** pour `Centrale`, `Salle`, `Classe`, `Affectation`, `Information`
+- ✅ **CRUD complet** sur toutes les entités
+- ✅ **Pages Front** :
+  - `/centrales` : gestion des centrales MQTT
+  - `/rooms` : gestion des salles (nom, capacité, statut)
+  - `/classes` : visualisation des classes
+  - `/timetable` : affichage filtrable de l’emploi du temps
+  - `/` : page d’accueil illustrative
+  - `/profile` : page de profil statique
+
+## 🛠️ Stack Technique
+
+- [Next.js 15](https://nextjs.org/)
+- [Prisma ORM](https://www.prisma.io/)
+- [Supabase](https://supabase.com/) (hébergement PostgreSQL)
+- [shadcn/ui](https://ui.shadcn.com/) pour l’UI
+- [Sonner](https://sonner.emilkowal.ski/) pour les toasts
+
+## 🔧 Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+git clone https://github.com/votre-utilisateur/school-planner.git
+cd school-planner
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Installe les dépendances
+npm install
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Remplis .env avec l'URL et le token de Supabase
+cp .env.example .env
