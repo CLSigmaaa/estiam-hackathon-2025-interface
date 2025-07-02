@@ -45,4 +45,4 @@ jobs:
                                         hostingProviderForumLink=""
                                         controlPanelLink="https://portal.azure.com/"
                                         webSystem="WebSites"><databases /></publishProfile></publishData>
-          package: .
+          package: ./out
