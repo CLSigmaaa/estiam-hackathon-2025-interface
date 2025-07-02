@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { filterTimeSlots } from "@/lib/timetable/filters";
@@ -72,6 +72,7 @@ export default function TimetableDisplay() {
   }
 
   return (
+    <Suspense fallback={<LoadingState message="Chargement du tableau..." />}>
     <div
       className={`min-h-screen flex flex-col p-4 lg:p-8 ${
         theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
@@ -93,5 +94,6 @@ export default function TimetableDisplay() {
         Dernière mise à jour : {getLastUpdated()}
       </div>
     </div>
+    </Suspense>
   );
 }
