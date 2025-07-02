@@ -24,11 +24,11 @@ export type Salle = {
 
 export type Affectation = {
   id: number
-  heure_debut: string // ISO
-  heure_fin: string
-  date_creation: string
-  date_modification: string
-  nom_professeur: string
+  heureDebut: string // ISO
+  heureFin: string
+  dateCreation: string
+  dateModification: string
+  nomProfesseur: string
   salles: { id: number; nom: string }[]
   classes: { id: number; nom: string }[]
 }

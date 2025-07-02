@@ -1,32 +1,41 @@
-import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+const baseUrl = process.env.API_JAVA_URL;
+
 export async function GET() {
+  if (!baseUrl) {
+    console.error("❌ API_JAVA_URL non défini");
+    return NextResponse.json({ error: "Configuration manquante" }, { status: 500 });
+  }
+
   try {
-    const affectations = await prisma.affectation.findMany({
-      include: {
-        salles: { include: { salle: true } },
-        classes: { include: { classe: true } },
-      },
-    });
+    const res = await fetch(`${baseUrl}/affectations`, { cache: "no-store" });
+    const text = await res.text();
 
-    // On aplati les sous-objets
-    const transformed = affectations.map((aff: any) => ({
-      ...aff,
-      salles: aff.salles.map((s: any) => s.salle),
-      classes: aff.classes.map((c: any) => c.classe),
-    }));
+    if (!res.ok) {
+      console.error("❌ [GET /affectations] Erreur API Java :", text);
+      return NextResponse.json({ error: "Erreur API externe" }, { status: 502 });
+    }
 
-    return NextResponse.json(transformed);
+    const data = JSON.parse(text);
+    console.log("✅ [GET /affectations] Données reçues :", data);
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Erreur de récupération des affectations:", error);
+    console.error("🔥 [GET /affectations] Erreur serveur :", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
+  if (!baseUrl) {
+    console.error("❌ API_JAVA_URL non défini");
+    return NextResponse.json({ error: "Configuration manquante" }, { status: 500 });
+  }
+
   try {
     const body = await req.json();
+    console.log("📥 [POST /affectations] Données reçues :", body);
+
     const {
       heure_debut,
       heure_fin,
@@ -35,27 +44,49 @@ export async function POST(req: Request) {
       classesIds,
     } = body;
 
-    const now = new Date();
+    if (
+      !heure_debut ||
+      !heure_fin ||
+      !nom_professeur ||
+      !Array.isArray(sallesIds) ||
+      !Array.isArray(classesIds)
+    ) {
+      console.warn("⚠️ [POST /affectations] Données invalides :", body);
+      return NextResponse.json({ error: "Requête invalide" }, { status: 400 });
+    }
 
-    const newAffectation = await prisma.affectation.create({
-      data: {
-        heure_debut: new Date(heure_debut),
-        heure_fin: new Date(heure_fin),
-        nom_professeur,
-        date_creation: now,
-        date_modification: now,
-        salles: {
-          create: sallesIds.map((id: number) => ({ salleId: id })),
-        },
-        classes: {
-          create: classesIds.map((id: number) => ({ classeId: id })),
-        },
-      },
+    const now = new Date().toISOString();
+
+    const payload = {
+      heureDebut: heure_debut,
+      heureFin: heure_fin,
+      nomProfesseur: nom_professeur,
+      dateCreation: now,
+      dateModification: now,
+      salles: sallesIds.map((id: number) => ({ id })),
+      classes: classesIds.map((id: number) => ({ id })),
+    };
+
+    console.log("📤 [POST /affectations] Payload à envoyer :", payload);
+
+    const res = await fetch(`${baseUrl}/affectations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
-    return NextResponse.json(newAffectation);
+    const text = await res.text();
+
+    if (!res.ok) {
+      console.error("❌ [POST /affectations] Erreur API Java :", text);
+      return NextResponse.json({ error: "Erreur API externe" }, { status: 502 });
+    }
+
+    const created = JSON.parse(text);
+    console.log("✅ [POST /affectations] Affectation créée :", created);
+    return NextResponse.json(created, { status: 201 });
   } catch (error) {
-    console.error("Erreur de création d'une affectation:", error);
+    console.error("🔥 [POST /affectations] Erreur serveur :", error);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

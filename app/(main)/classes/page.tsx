@@ -18,19 +18,18 @@ import {
 } from "@/components/ui/select"
 import { Users, Plus, Edit, Trash2 } from "lucide-react"
 
-
 interface Classe {
   id: number
   nom: string
   effectif: number
-  type: "tp" | "td" | "amphi"
+  type: "GROUPE" | "ENTIERE"
 }
 
 export default function ClassroomAdmin() {
   const [classes, setClasses] = useState<Classe[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Classe | null>(null)
-  const [form, setForm] = useState({ nom: "", effectif: "", type: "td" })
+  const [form, setForm] = useState({ nom: "", effectif: "", type: "GROUPE" })
   const [errors, setErrors] = useState({ nom: "", effectif: "", type: "" })
 
   useEffect(() => {
@@ -55,7 +54,7 @@ export default function ClassroomAdmin() {
       err.effectif = "Effectif invalide"
       valid = false
     }
-    if (!["tp", "td", "amphi"].includes(form.type)) {
+    if (!["ENTIERE", "GROUPE"].includes(form.type)) {
       err.type = "Type invalide"
       valid = false
     }
@@ -65,7 +64,7 @@ export default function ClassroomAdmin() {
   }
 
   const reset = () => {
-    setForm({ nom: "", effectif: "", type: "td" })
+    setForm({ nom: "", effectif: "", type: "ENTIERE" })
     setErrors({ nom: "", effectif: "", type: "" })
     setEditing(null)
   }
@@ -81,7 +80,7 @@ export default function ClassroomAdmin() {
     const payload = {
       nom: form.nom,
       effectif: parseInt(form.effectif),
-      type: form.type as "tp" | "td" | "amphi",
+      type: form.type as "ENTIERE" | "GROUPE",
     }
 
     const method = editing ? "PUT" : "POST"
@@ -229,9 +228,8 @@ export default function ClassroomAdmin() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tp">TP</SelectItem>
-                  <SelectItem value="td">TD</SelectItem>
-                  <SelectItem value="amphi">Amphi</SelectItem>
+                  <SelectItem value="ENTIERE">ENTIERE</SelectItem>
+                  <SelectItem value="GROUPE">GROUPE</SelectItem>
                 </SelectContent>
               </Select>
               {errors.type && <p className="text-sm text-destructive">{errors.type}</p>}

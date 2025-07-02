@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, Suspense } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { filterTimeSlots } from "@/lib/timetable/filters";
@@ -13,15 +13,7 @@ import TimetableHeader from "@/components/Timetable/Header";
 import TimetableTable from "@/components/Timetable/Table";
 import LoadingState from "@/components/LoadingState";
 
-export default function TimetablePage() {
-  return (
-    <Suspense fallback={<LoadingState message="Chargement du planning..." />}>
-      <TimetableDisplay />
-    </Suspense>
-  );
-}
-
-function TimetableDisplay() {
+export default function TimetableDisplay() {
   const { affectations, informations, salles, error } = useTimetableData();
   const searchParams = useSearchParams();
 
@@ -34,7 +26,7 @@ function TimetableDisplay() {
     return isNaN(d.getTime()) ? new Date().toISOString().split("T")[0] : day;
   }, [day]);
 
-  const allRooms = salles?.map((s) => s.nom) || [];
+  const allRooms = Array.from(new Set(salles?.map((s) => s.nom))) || [];
   const roomsToRender = showAll || rooms.length === 0 ? allRooms : rooms;
   const slotsToRender = filterTimeSlots(ALL_TIME_SLOTS, slot, showAll);
 
@@ -44,16 +36,16 @@ function TimetableDisplay() {
     const dateOnly = safeDay;
 
     for (const aff of affectations || []) {
-      const affDate = new Date(aff.heure_debut).toISOString().split("T")[0];
+      const affDate = new Date(aff.heureDebut).toISOString().split("T")[0];
       if (affDate !== dateOnly) continue;
 
-      const slots = getTimeSlotsBetween(new Date(aff.heure_debut), new Date(aff.heure_fin));
+      const slots = getTimeSlotsBetween(new Date(aff.heureDebut), new Date(aff.heureFin));
 
       for (const timeRange of slots) {
         if (!map[timeRange]) map[timeRange] = {};
 
         for (const salle of aff.salles || []) {
-          const label = aff.classes?.map((c) => c.nom).join(", ") || aff.nom_professeur;
+          const label = aff.classes?.map((c) => c.nom).join(", ") || aff.nomProfesseur;
           map[timeRange][salle.nom] = label;
         }
       }
