@@ -13,7 +13,15 @@ import TimetableHeader from "@/components/Timetable/Header";
 import TimetableTable from "@/components/Timetable/Table";
 import LoadingState from "@/components/LoadingState";
 
-export default function TimetableDisplay() {
+export default function TimetablePage() {
+  return (
+    <Suspense fallback={<LoadingState message="Chargement du planning..." />}>
+      <TimetableDisplay />
+    </Suspense>
+  );
+}
+
+function TimetableDisplay() {
   const { affectations, informations, salles, error } = useTimetableData();
   const searchParams = useSearchParams();
 
@@ -72,7 +80,6 @@ export default function TimetableDisplay() {
   }
 
   return (
-    <Suspense fallback={<LoadingState message="Chargement du tableau..." />}>
     <div
       className={`min-h-screen flex flex-col p-4 lg:p-8 ${
         theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
@@ -94,6 +101,5 @@ export default function TimetableDisplay() {
         Dernière mise à jour : {getLastUpdated()}
       </div>
     </div>
-    </Suspense>
   );
 }
