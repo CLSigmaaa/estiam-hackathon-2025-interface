@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { filterTimeSlots } from "@/lib/timetable/filters";
@@ -13,7 +13,15 @@ import TimetableHeader from "@/components/Timetable/Header";
 import TimetableTable from "@/components/Timetable/Table";
 import LoadingState from "@/components/LoadingState";
 
-export default function TimetableDisplay() {
+export default function TimetablePage() {
+  return (
+    <Suspense fallback={<LoadingState message="Chargement du planning..." />}>
+      <TimetableDisplay />
+    </Suspense>
+  );
+}
+
+function TimetableDisplay() {
   const { affectations, informations, salles, error } = useTimetableData();
   const searchParams = useSearchParams();
 
