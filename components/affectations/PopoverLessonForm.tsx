@@ -4,14 +4,21 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { rooms, teachers } from "@/lib/constants"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface PopoverLessonFormProps {
   day: string
   time: string
   onSubmit: (lesson: any) => void
   onClose: () => void
+  rooms: string[]
+  teachers: string[]
 }
 
 export default function PopoverLessonForm({
@@ -19,6 +26,8 @@ export default function PopoverLessonForm({
   time,
   onSubmit,
   onClose,
+  rooms,
+  teachers,
 }: PopoverLessonFormProps) {
   const [form, setForm] = useState({
     name: "",
@@ -34,8 +43,11 @@ export default function PopoverLessonForm({
 
   const handleSubmit = () => {
     if (form.name && form.room && form.teacher) {
+      console.log("[Formulaire] Soumission du cours :", form)
       onSubmit(form)
       onClose()
+    } else {
+      console.warn("⚠️ Formulaire incomplet")
     }
   }
 
@@ -43,7 +55,9 @@ export default function PopoverLessonForm({
     <div className="space-y-4">
       <div className="space-y-2">
         <h4 className="font-medium leading-none">Ajouter un cours</h4>
-        <p className="text-sm text-muted-foreground">{`${day} à ${time}`}</p>
+        <p className="text-sm text-muted-foreground">
+          {`${day} à ${time}`}
+        </p>
       </div>
       <div className="grid gap-3">
         <div className="grid gap-2">
@@ -55,9 +69,13 @@ export default function PopoverLessonForm({
             onChange={(e) => handleChange("name", e.target.value)}
           />
         </div>
+
         <div className="grid gap-2">
           <Label>Salle</Label>
-          <Select value={form.room} onValueChange={(v) => handleChange("room", v)}>
+          <Select
+            value={form.room}
+            onValueChange={(v) => handleChange("room", v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Choisir une salle" />
             </SelectTrigger>
@@ -70,9 +88,13 @@ export default function PopoverLessonForm({
             </SelectContent>
           </Select>
         </div>
+
         <div className="grid gap-2">
           <Label>Enseignant</Label>
-          <Select value={form.teacher} onValueChange={(v) => handleChange("teacher", v)}>
+          <Select
+            value={form.teacher}
+            onValueChange={(v) => handleChange("teacher", v)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Choisir un enseignant" />
             </SelectTrigger>
@@ -85,6 +107,7 @@ export default function PopoverLessonForm({
             </SelectContent>
           </Select>
         </div>
+
         <div className="grid gap-2">
           <Label>Nombre d’élèves</Label>
           <Input
@@ -94,11 +117,15 @@ export default function PopoverLessonForm({
             onChange={(e) => handleChange("students", e.target.value)}
           />
         </div>
+
         <div className="grid gap-2">
           <Label>Durée (en heures)</Label>
-          <Select value={form.period} onValueChange={(v) => handleChange("period", v)}>
+          <Select
+            value={form.period}
+            onValueChange={(v) => handleChange("period", v)}
+          >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Durée" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="1">1 heure</SelectItem>
@@ -108,6 +135,7 @@ export default function PopoverLessonForm({
           </Select>
         </div>
       </div>
+
       <div className="flex gap-2">
         <Button onClick={handleSubmit} className="flex-1">
           Ajouter

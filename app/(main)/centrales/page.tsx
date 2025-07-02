@@ -141,9 +141,7 @@ export default function GestionCentrales() {
       );
 
       toast(`Centrale ${editingCentrale ? "modifiée" : "ajoutée"}`, {
-        description: `La centrale "${updated.nom}" a été ${
-          editingCentrale ? "modifiée" : "ajoutée"
-        }.`,
+        description: `La centrale "${updated.nom}" a été ${editingCentrale ? "modifiée" : "ajoutée"}.`,
       });
 
       setIsDialogOpen(false);
@@ -174,33 +172,28 @@ export default function GestionCentrales() {
       });
     }
   };
+const API_URL = process.env.NEXT_PUBLIC_API_JAVA_URL || "http://localhost:8080/api";
 
-  const handleTestConnection = async (centrale: Centrale) => {
-    toast("Test de communication", {
-      description: `Envoi d'un ping sur le topic ${centrale.topique}/reload...`,
+const handleTestConnection = async (centrale: Centrale) => {
+  toast("Test de communication", {
+    description: `Rechargement de la centrale ID ${centrale.id}...`,
+  });
+
+  try {
+    const res = await fetch(`${API_URL}/centrales/reload/${centrale.id}`);
+
+    if (!res.ok) throw new Error();
+
+    toast("Reload réussi", {
+      description: `La centrale "${centrale.nom}" a bien été rechargée.`,
     });
+  } catch {
+    toast("Erreur de communication", {
+      description: `Impossible de contacter "${centrale.nom}".`,
+    });
+  }
+};
 
-    try {
-      const res = await fetch("/api/centrale", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic: `${centrale.topique}/reload`,
-          message: "ping",
-        }),
-      });
-
-      if (!res.ok) throw new Error();
-
-      toast("Ping réussi", {
-        description: `La centrale "${centrale.nom}" a bien répondu.`,
-      });
-    } catch {
-      toast("Erreur de communication", {
-        description: `Impossible de contacter "${centrale.nom}".`,
-      });
-    }
-  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -217,8 +210,7 @@ export default function GestionCentrales() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Server className="w-5 h-5" /> Centrales enregistrées (
-            {centrales.length})
+            <Server className="w-5 h-5" /> Centrales enregistrées ({centrales.length})
           </CardTitle>
           <CardDescription>
             Topiques et états des centrales connectées
@@ -273,9 +265,7 @@ export default function GestionCentrales() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Supprimer la centrale
-                          </AlertDialogTitle>
+                          <AlertDialogTitle>Supprimer la centrale</AlertDialogTitle>
                           <AlertDialogDescription>
                             Confirmez la suppression de "{c.nom}" ?
                           </AlertDialogDescription>
@@ -303,13 +293,9 @@ export default function GestionCentrales() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingCentrale
-                ? "Modifier la centrale"
-                : "Ajouter une centrale"}
+              {editingCentrale ? "Modifier la centrale" : "Ajouter une centrale"}
             </DialogTitle>
-            <DialogDescription>
-              Renseignez les informations de la centrale
-            </DialogDescription>
+            <DialogDescription>Renseignez les informations de la centrale</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -317,23 +303,17 @@ export default function GestionCentrales() {
               <Input
                 id="nom"
                 value={formData.nom}
-                onChange={(e) =>
-                  setFormData({ ...formData, nom: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                 className={errors.nom ? "border-destructive" : ""}
               />
-              {errors.nom && (
-                <p className="text-sm text-destructive">{errors.nom}</p>
-              )}
+              {errors.nom && <p className="text-sm text-destructive">{errors.nom}</p>}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="topique">Topique MQTT</Label>
               <Input
                 id="topique"
                 value={formData.topique}
-                onChange={(e) =>
-                  setFormData({ ...formData, topique: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, topique: e.target.value })}
                 className={errors.topique ? "border-destructive" : ""}
               />
               {errors.topique && (
@@ -346,10 +326,7 @@ export default function GestionCentrales() {
                 id="etat"
                 value={formData.etat}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    etat: e.target.value as "online" | "offline",
-                  })
+                  setFormData({ ...formData, etat: e.target.value as "online" | "offline" })
                 }
                 className="border border-input rounded px-3 py-2"
               >
