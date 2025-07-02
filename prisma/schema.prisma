@@ -1,0 +1,98 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Salle {
+  id       Int     @id @default(autoincrement())
+  nom      String
+  capacite Int
+  statut   StatutSalle
+
+  affectationsSalles AffectationSalle[]
+}
+
+model Classe {
+  id       Int     @id @default(autoincrement())
+  nom      String
+  effectif Int
+  type     TypeClasse
+
+  affectationsClasses AffectationClasse[]
+}
+
+model Centrale {
+  id     Int     @id @default(autoincrement())
+  nom    String
+  topique String
+  etat   StatutCentrale
+}
+
+model Affectation {
+  id              Int       @id @default(autoincrement())
+  heure_debut     DateTime
+  heure_fin       DateTime
+  date_creation   DateTime
+  date_modification DateTime
+  nom_professeur  String
+
+  salles  AffectationSalle[]
+  classes AffectationClasse[]
+}
+
+model AffectationSalle {
+  id            Int @id @default(autoincrement())
+  affectation   Affectation @relation(fields: [affectationId], references: [id])
+  affectationId Int
+  salle         Salle @relation(fields: [salleId], references: [id])
+  salleId       Int
+}
+
+model AffectationClasse {
+  id            Int @id @default(autoincrement())
+  affectation   Affectation @relation(fields: [affectationId], references: [id])
+  affectationId Int
+  classe        Classe @relation(fields: [classeId], references: [id])
+  classeId      Int
+}
+
+model User {
+  id          Int    @id @default(autoincrement())
+  mail        String @unique
+  mot_de_passe String
+  role        String
+}
+
+model Information {
+  id       Int    @id @default(autoincrement())
+  type     TypeInformation
+  message  String
+  statut   Boolean
+}
+
+enum StatutSalle {
+  active
+  inactive
+}
+
+enum TypeClasse {
+  tp
+  td
+  amphi
+}
+
+enum StatutCentrale {
+  online
+  offline
+}
+
+enum TypeInformation {
+  info
+  warning
+  error
+}

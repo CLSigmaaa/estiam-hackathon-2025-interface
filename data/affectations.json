@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "heure_debut": "2025-07-01T08:00:00",
+    "heure_fin": "2025-07-01T09:00:00",
+    "date_creation": "2025-06-30T10:00:00",
+    "date_modification": "2025-06-30T10:00:00",
+    "nom_professeur": "M. Dupont"
+  },
+  {
+    "id": 2,
+    "heure_debut": "2025-07-01T09:00:00",
+    "heure_fin": "2025-07-01T10:00:00",
+    "date_creation": "2025-06-30T10:05:00",
+    "date_modification": "2025-06-30T10:05:00",
+    "nom_professeur": "Mme Martin"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "type": "info",
+    "message": "Cours annulé pour raison météo",
+    "statut": true
+  },
+  {
+    "type": "warning",
+    "message": "Salle E302 temporairement fermée",
+    "statut": false
+  }
+]

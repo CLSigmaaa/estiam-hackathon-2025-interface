@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "nom": "E301",
+    "capacite": 30,
+    "statut": "ouverte"
+  },
+  {
+    "id": 2,
+    "nom": "E302",
+    "capacite": 25,
+    "statut": "fermee"
+  }
+]

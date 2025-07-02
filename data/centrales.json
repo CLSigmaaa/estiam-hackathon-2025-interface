@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "nom": "Salle E",
+    "topique": "display/salle-e",
+    "etat": "inactive"
+  },
+  {
+    "id": 2,
+    "nom": "Couloir",
+    "topique": "display/couloir",
+    "etat": "inactive"
+  }
+]
