@@ -49,7 +49,7 @@ export default function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
@@ -57,8 +57,8 @@ export default function RegisterForm() {
               <UserPlus className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Register</CardTitle>
-          <CardDescription>Créez votre compte</CardDescription>
+          <CardTitle className="text-2xl font-bold">Création de compte</CardTitle>
+          <CardDescription>Merci de créer votre compte</CardDescription>
         </CardHeader>
 
         <form action={action}>
