@@ -33,13 +33,29 @@ export default function ClassroomAdmin() {
   const [errors, setErrors] = useState({ nom: "", effectif: "", type: "" })
 
   useEffect(() => {
-    fetch("/api/classes")
+    const baseUrl = process.env.NEXT_PUBLIC_API_JAVA_URL
+
+    if (!baseUrl) {
+      console.error("NEXT_PUBLIC_API_JAVA_URL non défini")
+      toast("Erreur", {
+        description: "Configuration manquante : NEXT_PUBLIC_API_JAVA_URL",
+      })
+      return
+    }
+
+    fetch(`${baseUrl}/classes`)
       .then((res) => res.json())
-      .then(setClasses)
-      .catch(() =>
-        toast("Erreur", { description: "Impossible de charger les classes." })
-      )
+      .then((data) => {
+        setClasses(data)
+      })
+      .catch((error) => {
+        console.error("Erreur lors du fetch des classes:", error)
+        toast("Erreur", {
+          description: "Impossible de charger les classes depuis l'API Java.",
+        })
+      })
   }, [])
+
 
   const validate = () => {
     const err = { nom: "", effectif: "", type: "" }
