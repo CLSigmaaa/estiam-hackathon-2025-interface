@@ -172,28 +172,26 @@ export default function GestionCentrales() {
       });
     }
   };
-const API_URL = process.env.NEXT_PUBLIC_API_JAVA_URL || "http://localhost:8080/api";
-
-const handleTestConnection = async (centrale: Centrale) => {
-  toast("Test de communication", {
-    description: `Rechargement de la centrale ID ${centrale.id}...`,
-  });
-
-  try {
-    const res = await fetch(`${API_URL}/centrales/reload/${centrale.id}`);
-
-    if (!res.ok) throw new Error();
-
-    toast("Reload réussi", {
-      description: `La centrale "${centrale.nom}" a bien été rechargée.`,
+  
+  const handleTestConnection = async (centrale: Centrale) => {
+    toast("Test de communication", {
+      description: `Rechargement de la centrale ID ${centrale.id}...`,
     });
-  } catch {
-    toast("Erreur de communication", {
-      description: `Impossible de contacter "${centrale.nom}".`,
-    });
-  }
-};
 
+    try {
+      const res = await fetch(`/api/proxy/reload?id=${centrale.id}`);
+
+      if (!res.ok) throw new Error();
+
+      toast("Reload réussi", {
+        description: `La centrale "${centrale.nom}" a bien été rechargée.`,
+      });
+    } catch {
+      toast("Erreur de communication", {
+        description: `Impossible de contacter "${centrale.nom}".`,
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
