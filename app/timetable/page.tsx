@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useMemo } from "react";
-
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { filterTimeSlots } from "@/lib/timetable/filters";
@@ -29,11 +26,19 @@ function TimetableDisplay() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Masquer le curseur
     const originalCursor = document.body.style.cursor;
     document.body.style.cursor = "none";
 
+    // Désactiver la traduction automatique (Google Chrome)
+    const meta = document.createElement("meta");
+    meta.name = "google";
+    meta.content = "notranslate";
+    document.head.appendChild(meta);
+
     return () => {
       document.body.style.cursor = originalCursor;
+      document.head.removeChild(meta);
     };
   }, []);
 
@@ -50,7 +55,6 @@ function TimetableDisplay() {
   const roomsToRender = showAll || rooms.length === 0 ? allRooms : rooms;
   const slotsToRender = filterTimeSlots(ALL_TIME_SLOTS, slot, showAll);
 
-  // Construction d’un planning à partir des affectations
   const daySchedule = useMemo(() => {
     const map: Record<string, Record<string, string>> = {};
     const dateOnly = safeDay;
@@ -93,8 +97,8 @@ function TimetableDisplay() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col p-4 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
-        }`}
+      translate="no"
+      className={`min-h-screen flex flex-col p-4 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"}`}
     >
       <TimetableHeader
         formattedDate={formatFrDate(safeDay)}
