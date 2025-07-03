@@ -5,8 +5,34 @@ import { TempNavbar } from "@/components/temp-navbar";
 import FilterBar from "@/components/affectations/FiltersBar";
 import CalendarGrid from "@/components/affectations/CalendarGrid";
 import PopoverLessonForm from "@/components/affectations/PopoverLessonForm";
+import { format } from "date-fns";
 
-const timeSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+function generateTimeSlots(
+  start: string,
+  end: string,
+  stepMinutes: number
+): string[] {
+  const slots: string[] = [];
+  let [hour, minute] = start.split(":").map(Number);
+  const [endHour, endMinute] = end.split(":").map(Number);
+
+  while (hour < endHour || (hour === endHour && minute < endMinute)) {
+    slots.push(
+      `${hour.toString().padStart(2, "0")}:${minute
+        .toString()
+        .padStart(2, "0")}`
+    );
+    minute += stepMinutes;
+    if (minute >= 60) {
+      minute -= 60;
+      hour += 1;
+    }
+  }
+
+  return slots;
+}
+
+const timeSlots = generateTimeSlots("08:00", "18:00", 30);
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 export default function AffectationsPage() {
@@ -18,19 +44,20 @@ export default function AffectationsPage() {
   const [fetchedTeachers, setFetchedTeachers] = useState<string[]>([]);
   const [fetchedClasses, setFetchedClasses] = useState<string[]>([]);
 
-  const [assignedClasses, setAssignedClasses] = useState<Record<string, any>>({});
+  const [allRooms, setAllRooms] = useState<any[]>([]);
+  const [allClasses, setAllClasses] = useState<any[]>([]);
+
+  const [assignedClasses, setAssignedClasses] = useState<Record<string, any>>(
+    {}
+  );
   const [loading, setLoading] = useState(true);
 
   const [draggedClass, setDraggedClass] = useState<any>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{ day: string; time: string } | null>(null);
-  const [newLesson, setNewLesson] = useState({
-    name: "",
-    room: "",
-    teacher: "",
-    students: "",
-    period: 1,
-  });
+  const [selectedCell, setSelectedCell] = useState<{
+    day: string;
+    time: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,11 +72,14 @@ export default function AffectationsPage() {
         const affData = await affRes.json();
         const classData = await classesRes.json();
 
-        // Salles actives
-        const activeRooms = roomsData.filter((r: any) => r.statut === "active").map((r: any) => r.nom);
+        setAllRooms(roomsData);
+        setAllClasses(classData);
+
+        const activeRooms = roomsData
+          .filter((r: any) => r.statut === "LIBRE")
+          .map((r: any) => r.nom);
         setFetchedRooms(activeRooms);
 
-        // Liste des classes globales
         const classNames = classData.map((cls: any) => cls.nom);
         setFetchedClasses(classNames);
 
@@ -57,32 +87,38 @@ export default function AffectationsPage() {
         const uniqueTeachers = new Set<string>();
 
         affData.forEach((aff: any) => {
-  const start = new Date(aff.heure_debut);
-  if (isNaN(start.getTime())) {
-    console.warn("Date invalide pour l'affectation :", aff);
-    return; // skip invalid date
-  }
+          const start = new Date(aff.heureDebut);
+          const end = new Date(aff.heureFin);
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
 
-  const time = start.toISOString().substring(11, 16);
-  const day = start.toLocaleDateString("en-US", { weekday: "long" });
+          const startDate = format(start, "yyyy-MM-dd");
 
-  const room = aff.salles?.[0]?.nom ?? "Inconnue";
-  const teacher = aff.nom_professeur ?? "Inconnu";
-  const className = aff.classes?.[0]?.nom ?? "Sans nom";
+          const durationInMinutes = (end.getTime() - start.getTime()) / 60000;
+          const period = Math.max(1, Math.round(durationInMinutes / 60));
 
-  uniqueTeachers.add(teacher);
+          const room = aff.salles?.[0]?.nom ?? "Inconnue";
+          const teacher = aff.nomProfesseur ?? "Inconnu";
+          const className = aff.classes?.[0]?.nom ?? "Sans nom";
+          const effectif = aff.classes?.[0]?.effectif ?? 0;
 
-  const key = `${day}-${time}`;
-  transformed[key] = {
-    id: aff.id,
-    name: className,
-    teacher: teacher,
-    room: room,
-    students: aff.classes?.[0]?.effectif ?? 0,
-    status: "confirmed",
-  };
-});
+          uniqueTeachers.add(teacher);
 
+          for (const slot of timeSlots) {
+            const slotTime = new Date(`${startDate}T${slot}`);
+            if (slotTime >= start && slotTime < end) {
+              const key = `${startDate}-${slot}`;
+              transformed[key] = {
+                id: aff.id,
+                name: className,
+                teacher,
+                room,
+                students: effectif,
+                status: "confirmed",
+                period,
+              };
+            }
+          }
+        });
 
         setFetchedTeachers([...uniqueTeachers]);
         setAssignedClasses(transformed);
@@ -99,7 +135,8 @@ export default function AffectationsPage() {
   const filteredClasses = Object.fromEntries(
     Object.entries(assignedClasses).filter(([_, cls]) => {
       const matchRoom = selectedRoom === "all" || cls.room === selectedRoom;
-      const matchTeacher = selectedTeacher === "all" || cls.teacher === selectedTeacher;
+      const matchTeacher =
+        selectedTeacher === "all" || cls.teacher === selectedTeacher;
       const matchClass = selectedClass === "all" || cls.name === selectedClass;
       return matchRoom && matchTeacher && matchClass;
     })
@@ -113,7 +150,6 @@ export default function AffectationsPage() {
   const handleDrop = (e: React.DragEvent, day: string, time: string) => {
     e.preventDefault();
     if (draggedClass) {
-      console.log(`Assigning ${draggedClass.name} to ${day} at ${time}`);
       setDraggedClass(null);
     }
   };
@@ -123,18 +159,72 @@ export default function AffectationsPage() {
     setPopoverOpen(true);
   };
 
-  const handleAddLesson = () => {
-    if (selectedCell && newLesson.name && newLesson.room && newLesson.teacher) {
-      console.log(`Adding lesson: ${newLesson.name} to ${selectedCell.day} at ${selectedCell.time}`);
-      setPopoverOpen(false);
-      setNewLesson({ name: "", room: "", teacher: "", students: "", period: 1 });
-      setSelectedCell(null);
+  const handleAddLesson = async (lesson: any) => {
+    if (!selectedCell) return;
+
+    const { day, time } = selectedCell;
+    const startISO = `${day}T${time}`;
+
+    const endHour = parseInt(time.split(":")[0]) + parseInt(lesson.period);
+    const endISO = `${day}T${endHour.toString().padStart(2, "0")}:${
+      time.split(":")[1]
+    }`;
+
+    const matchedRoom = allRooms.find((r) => r.nom === lesson.room);
+    const matchedClass = allClasses.find((c) => c.nom === lesson.className);
+
+    if (!matchedRoom || !matchedClass) {
+      console.error("❌ Salle ou classe non trouvée", {
+        salle: lesson.room,
+        classe: lesson.name,
+      });
+      return;
+    }
+
+    const payload = {
+      heureDebut: startISO,
+      heureFin: endISO,
+      dateCreation: new Date().toISOString(),
+      dateModification: new Date().toISOString(),
+      nomProfesseur: lesson.teacher,
+      salles: [
+        {
+          id: matchedRoom.id,
+          nom: matchedRoom.nom,
+          capacite: matchedRoom.capacite,
+          statut: "OCCUPE", 
+        },
+      ],
+      classes: [
+        {
+          id: matchedClass.id,
+          nom: matchedClass.nom,
+          effectif: matchedClass.effectif,
+          type: matchedClass.type ?? "ENTIERE", 
+        },
+      ],
+    };
+
+    console.log("📤 [Formulaire] Données à soumettre :", payload);
+
+    try {
+      const res = await fetch("/api/affectations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Échec création affectation");
+
+    } catch (err) {
+      console.error(`[Erreur ajout]`, err);
+    } finally {
+      resetPopover();
     }
   };
 
   const resetPopover = () => {
     setPopoverOpen(false);
-    setNewLesson({ name: "", room: "", teacher: "", students: "", period: 1 });
     setSelectedCell(null);
   };
 
@@ -168,16 +258,17 @@ export default function AffectationsPage() {
         popoverOpen={popoverOpen}
         resetPopover={resetPopover}
       >
-        <PopoverLessonForm
-          selectedCell={selectedCell}
-          popoverOpen={popoverOpen}
-          newLesson={newLesson}
-          setNewLesson={setNewLesson}
-          handleAddLesson={handleAddLesson}
-          resetPopover={resetPopover}
-          rooms={fetchedRooms}
-          teachers={fetchedTeachers}
-        />
+        {popoverOpen && selectedCell && (
+          <PopoverLessonForm
+            day={selectedCell.day}
+            time={selectedCell.time}
+            onSubmit={handleAddLesson}
+            onClose={resetPopover}
+            rooms={fetchedRooms}
+            teachers={fetchedTeachers}
+            classes={fetchedClasses}
+          />
+        )}
       </CalendarGrid>
     </div>
   );
