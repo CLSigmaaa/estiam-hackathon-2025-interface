@@ -5,8 +5,17 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Shield, Eye, Database, UserCheck, Clock, Mail } from "lucide-react"
+import { Suspense } from "react"
 
-export default function RgpdCharte() {
+export default function RgpdChartePage() {
+  return (
+    <Suspense fallback={<></>} >
+      <RgpdCharte />
+    </Suspense>
+  )
+}
+
+function RgpdCharte() {
   const searchParams = useSearchParams()
   const email = searchParams.get("email")
 
