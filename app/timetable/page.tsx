@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useMemo } from "react";
+
 import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -24,6 +27,15 @@ export default function TimetablePage() {
 function TimetableDisplay() {
   const { affectations, informations, salles, error } = useTimetableData();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const originalCursor = document.body.style.cursor;
+    document.body.style.cursor = "none";
+
+    return () => {
+      document.body.style.cursor = originalCursor;
+    };
+  }, []);
 
   const { day, rooms, slot, showAll, theme } = useMemo(() => {
     return parseTimetableParams(searchParams);
@@ -81,9 +93,8 @@ function TimetableDisplay() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col p-4 lg:p-8 ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
-      }`}
+      className={`min-h-screen flex flex-col p-4 lg:p-8 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"
+        }`}
     >
       <TimetableHeader
         formattedDate={formatFrDate(safeDay)}
